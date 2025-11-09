@@ -1,0 +1,71 @@
+<div class="p-4 sm:p-6 lg:p-8 space-y-6">
+  <header class="flex justify-between items-center flex-wrap gap-4">
+    <div>
+      <h1 class="text-3xl font-bold tracking-tight text-gray-900">Announcements</h1>
+      <p class="mt-1 text-gray-600">Latest updates and news for the team.</p>
+    </div>
+    @if (isManager()) {
+      <button class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors text-sm font-semibold flex items-center">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
+        </svg>
+        Add Announcement
+      </button>
+    }
+  </header>
+
+  <div class="space-y-4">
+    @for (announcement of announcements(); track announcement.id) {
+      <div class="bg-white p-6 rounded-lg shadow-sm border border-l-4" 
+            [class.border-l-red-500]="announcement.category === 'Urgent'" 
+            [class.border-l-yellow-500]="announcement.category === 'Policy'" 
+            [class.border-l-blue-500]="announcement.category === 'General'">
+        <div class="flex justify-between items-start gap-4">
+          <div class="flex-grow">
+            <div class="flex items-center gap-3 mb-2 flex-wrap">
+              <span class="px-2 py-1 text-xs font-medium rounded-full"
+                    [class.bg-red-100]="announcement.category === 'Urgent'" [class.text-red-800]="announcement.category === 'Urgent'"
+                    [class.bg-yellow-100]="announcement.category === 'Policy'" [class.text-yellow-800]="announcement.category === 'Policy'"
+                    [class.bg-blue-100]="announcement.category === 'General'" [class.text-blue-800]="announcement.category === 'General'">
+                {{ announcement.category }}
+              </span>
+              <h3 class="text-xl font-semibold text-gray-800">{{ announcement.title }}</h3>
+            </div>
+            <p class="text-gray-600 mt-1 prose max-w-none">{{ announcement.message }}</p>
+            <p class="text-xs text-gray-400 mt-3">
+              Posted by {{ getPosterName(announcement.postedBy) }} on {{ announcement.datePosted | date: 'mediumDate' }}
+            </p>
+          </div>
+          <div class="flex-shrink-0 flex flex-col items-end space-y-2 w-32 text-right">
+            @if (isManager()) {
+              <div class="flex items-center gap-2">
+                <button class="text-sm text-gray-500 hover:text-gray-700 font-medium">Edit</button>
+                <span class="text-gray-300">|</span>
+                <button (click)="deleteAnnouncement(announcement.id)" class="text-sm text-red-500 hover:text-red-700 font-medium">Delete</button>
+              </div>
+            } @else if (!isRead(announcement)) {
+              <button (click)="markAsRead(announcement.id)" class="px-3 py-1.5 bg-green-100 text-green-800 text-sm font-semibold rounded-md hover:bg-green-200 transition-colors">
+                Mark as Read
+              </button>
+            } @else {
+               <div class="flex items-center justify-end gap-1.5 px-3 py-1.5 text-sm text-gray-500">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-green-500" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                </svg>
+                <span>Read</span>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+    } @empty {
+      <div class="text-center py-12 bg-white rounded-lg shadow-sm border">
+        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-2.236 9.168-5.584M9 18L5 18M5 18l4-4" />
+        </svg>
+        <h3 class="mt-2 text-sm font-medium text-gray-900">No announcements</h3>
+        <p class="mt-1 text-sm text-gray-500">There are no announcements to display yet.</p>
+      </div>
+    }
+  </div>
+</div>

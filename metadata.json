@@ -1,0 +1,5 @@
+{
+  "name": "Restaurant Staff Hub",
+  "description": "An internal app for restaurant managers and employees to handle staff scheduling, deliveries, HR requests, communication, and analytics in one unified system.",
+  "requestFramePermissions": []
+}

@@ -1,0 +1,149 @@
+<div class="p-4 sm:p-6 lg:p-8 space-y-8">
+  <header>
+    <h1 class="text-3xl font-bold tracking-tight text-gray-900">Dashboard</h1>
+    <p class="mt-1 text-gray-600">Welcome back, {{ currentUser()?.fullName }}!</p>
+  </header>
+
+  @if (isManager()) {
+  <!-- Manager Dashboard -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+    <!-- Quick Actions -->
+    <div class="md:col-span-2 lg:col-span-4 bg-white p-4 rounded-lg shadow flex items-center justify-between flex-wrap gap-4">
+      <h3 class="text-lg font-semibold text-gray-800">Quick Actions</h3>
+      <div class="flex gap-2 flex-wrap">
+        <button class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm">Add Announcement</button>
+        <button class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors text-sm">Assign Shift</button>
+        <button class="px-4 py-2 bg-yellow-500 text-white rounded-md hover:bg-yellow-600 transition-colors text-sm">Review HR Request</button>
+        <button class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors text-sm">Assign Delivery</button>
+      </div>
+    </div>
+
+    <!-- KPI Cards -->
+    <div class="bg-white p-6 rounded-lg shadow">
+      <h4 class="text-gray-500 font-medium">Active Staff</h4>
+      <p class="text-3xl font-bold text-gray-900">{{ activeEmployees() }}</p>
+    </div>
+    <div class="bg-white p-6 rounded-lg shadow">
+      <h4 class="text-gray-500 font-medium">Inactive Staff</h4>
+      <p class="text-3xl font-bold text-gray-900">{{ inactiveEmployees() }}</p>
+    </div>
+    <div class="bg-white p-6 rounded-lg shadow">
+      <h4 class="text-gray-500 font-medium">Pending HR Requests</h4>
+      <p class="text-3xl font-bold text-red-500">{{ pendingRequests().length }}</p>
+    </div>
+    <div class="bg-white p-6 rounded-lg shadow">
+      <h4 class="text-gray-500 font-medium">Missed Shifts (Total)</h4>
+      <p class="text-3xl font-bold text-red-500">{{ missedShifts().length }}</p>
+    </div>
+
+    <!-- Charts -->
+    <div class="md:col-span-2 lg:col-span-2 bg-white p-6 rounded-lg shadow">
+      <h3 class="text-lg font-semibold mb-4">Weekly Shift Overview</h3>
+      <div class="h-64">
+        <app-chart type="bar" [data]="shiftOverviewData()" [options]="chartOptions" />
+      </div>
+    </div>
+    <div class="md:col-span-2 lg:col-span-2 bg-white p-6 rounded-lg shadow">
+      <h3 class="text-lg font-semibold mb-4">Today's Delivery Status</h3>
+      <div class="h-64">
+        <app-chart type="doughnut" [data]="deliveryStatusData()" [options]="chartOptions" />
+      </div>
+    </div>
+    
+    <!-- Tables -->
+    <div class="md:col-span-2 lg:col-span-4 bg-white p-6 rounded-lg shadow">
+       <h3 class="text-lg font-semibold mb-4">Pending HR Requests</h3>
+       <div class="overflow-x-auto">
+         <table class="min-w-full divide-y divide-gray-200">
+           <thead class="bg-gray-50">
+             <tr>
+               <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Employee</th>
+               <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+               <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Dates</th>
+             </tr>
+           </thead>
+           <tbody class="bg-white divide-y divide-gray-200">
+            @for (request of pendingRequests(); track request.id) {
+             <tr>
+               <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ getEmployeeName(request.employeeId) }}</td>
+               <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ request.type }}</td>
+               <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ request.startDate }} to {{ request.endDate }}</td>
+             </tr>
+            } @empty {
+             <tr>
+              <td colspan="3" class="px-6 py-4 text-center text-sm text-gray-500">No pending requests.</td>
+             </tr>
+            }
+           </tbody>
+         </table>
+       </div>
+    </div>
+
+  </div>
+  } @else {
+  <!-- Employee Dashboard -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <!-- Quick Actions -->
+    <div class="md:col-span-2 lg:col-span-3 bg-white p-4 rounded-lg shadow flex items-center justify-between flex-wrap gap-4">
+      <h3 class="text-lg font-semibold text-gray-800">Quick Actions</h3>
+      <div class="flex gap-2 flex-wrap">
+        <button class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm">Submit HR Request</button>
+        <button class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors text-sm">Update Delivery Status</button>
+        <button class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors text-sm">View Weekly Schedule</button>
+      </div>
+    </div>
+    
+    <!-- My Summary Cards -->
+    <div class="bg-white p-6 rounded-lg shadow">
+      <h4 class="text-gray-500 font-medium">Upcoming Shifts</h4>
+      <p class="text-3xl font-bold text-gray-900">{{ myUpcomingShifts().length }}</p>
+    </div>
+    <div class="bg-white p-6 rounded-lg shadow">
+      <h4 class="text-gray-500 font-medium">Pending Deliveries</h4>
+      <p class="text-3xl font-bold text-gray-900">{{ myPendingDeliveries().length }}</p>
+    </div>
+    <div class="bg-white p-6 rounded-lg shadow">
+      <h4 class="text-gray-500 font-medium">Pending HR Requests</h4>
+      <p class="text-3xl font-bold text-red-500">{{ myPendingHrRequests().length }}</p>
+    </div>
+
+    <!-- My Announcements -->
+    <div class="md:col-span-2 lg:col-span-3 bg-white p-6 rounded-lg shadow">
+       <h3 class="text-lg font-semibold mb-4">My Unread Announcements</h3>
+       <ul class="space-y-4">
+        @for (announcement of myAnnouncements(); track announcement.id) {
+          <li class="p-4 rounded-md border" [class.border-red-300]="announcement.category === 'Urgent'" [class.bg-red-50]="announcement.category === 'Urgent'">
+            <div class="flex justify-between items-start">
+              <div>
+                <p class="font-semibold">{{ announcement.title }}</p>
+                <p class="text-sm text-gray-600">{{ announcement.message }}</p>
+              </div>
+              <button class="text-sm text-blue-600 hover:underline ml-4">Mark as Read</button>
+            </div>
+          </li>
+        } @empty {
+          <li class="text-center text-sm text-gray-500 py-4">No unread announcements.</li>
+        }
+       </ul>
+    </div>
+    
+    <!-- My Upcoming Shifts -->
+    <div class="md:col-span-2 lg:col-span-3 bg-white p-6 rounded-lg shadow">
+       <h3 class="text-lg font-semibold mb-4">My Upcoming Shifts</h3>
+       <div class="space-y-3">
+        @for (shift of myUpcomingShifts(); track shift.id) {
+          <div class="p-4 rounded-md bg-gray-50 flex justify-between items-center">
+            <div>
+              <p class="font-medium text-gray-800">{{ shift.date }}</p>
+              <p class="text-sm text-gray-600">{{ shift.startTime }} - {{ shift.endTime }}</p>
+            </div>
+            <span class="px-2 py-1 text-xs font-medium rounded-full bg-yellow-100 text-yellow-800">Scheduled</span>
+          </div>
+        } @empty {
+          <p class="text-center text-sm text-gray-500 py-4">No upcoming shifts.</p>
+        }
+       </div>
+    </div>
+  </div>
+  }
+</div>
